@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-Type VIP — One Day, Perfectly Arranged</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #B08D3E;
+    --gold-bright: #D4AF6A;
+    --ivory: #F2EDE3;
+    --ink: #0C0A07;
+    --hud-font: 'Jost', sans-serif;
+    --serif: 'Playfair Display', serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  body {
+    background: var(--ink);
+    color: var(--ivory);
+    font-family: var(--hud-font);
+    overflow-x: hidden;
+  }
+  #scroll-space { position: relative; width: 100%; }
+
+  /* ---------- canvas ---------- */
+  #film {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1;
+    background: var(--ink);
+  }
+  #grade {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background:
+      radial-gradient(ellipse at center, transparent 55%, rgba(6,4,2,0.55) 100%);
+    mix-blend-mode: multiply;
+  }
+  #tint { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  #grain {
+    position: fixed; inset: -100px; z-index: 3; pointer-events: none;
+    opacity: 0.05;
+  }
+
+  /* ---------- HUD ---------- */
+  .hud { position: fixed; z-index: 10; pointer-events: none; }
+  #hud-brand {
+    top: 34px; left: 44px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  #hud-brand svg { display: block; }
+  #hud-brand .wordline {
+    font-size: 12px; letter-spacing: 0.42em; font-weight: 300;
+    text-transform: uppercase;
+    border-left: 1px solid rgba(176,141,62,0.6);
+    padding-left: 16px; line-height: 1.4;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+  }
+  #hud-brand .wordline b { color: var(--gold-bright); font-weight: 400; }
+
+  #hud-top-right {
+    top: 40px; right: 48px; text-align: right;
+    font-size: 9.5px; letter-spacing: 0.38em; font-weight: 300;
+    color: rgba(242,237,227,0.75); text-transform: uppercase; line-height: 2.1;
+  }
+  #hud-top-right .gold { color: var(--gold-bright); }
+  #contact-pill {
+    display: inline-block; margin-top: 12px;
+    pointer-events: auto; text-decoration: none;
+    font-size: 9.5px; letter-spacing: 0.38em; font-weight: 400;
+    text-transform: uppercase; color: var(--ink);
+    background: var(--gold-bright);
+    padding: 10px 18px 9px 22px;
+    transition: background .3s ease, box-shadow .3s ease;
+  }
+  #contact-pill:hover { background: var(--ivory); box-shadow: 0 4px 24px rgba(212,175,106,0.35); }
+
+  /* time rail */
+  #hud-rail {
+    left: 44px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; align-items: flex-start; gap: 22px;
+  }
+  #rail-track {
+    position: relative; width: 1px; height: 46vh; min-height: 300px;
+    background: rgba(242,237,227,0.18);
+  }
+  #rail-fill {
+    position: absolute; top: 0; left: 0; width: 1px; height: 0%;
+    background: linear-gradient(to bottom, rgba(212,175,106,0.4), var(--gold-bright));
+  }
+  #rail-dot {
+    position: absolute; left: 50%; top: 0%;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold-bright);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 12px rgba(212,175,106,0.9);
+  }
+  .rail-stop {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    width: 5px; height: 1px; background: rgba(242,237,227,0.4);
+  }
+  .rail-stop span {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 8px; letter-spacing: 0.32em; color: rgba(242,237,227,0.45);
+    white-space: nowrap; text-transform: uppercase; font-weight: 300;
+  }
+  .rail-stop.active span { color: var(--gold-bright); opacity: 1; }
+
+  #hud-clock { text-align: left; }
+  #clock-time {
+    font-size: 30px; font-weight: 200; letter-spacing: 0.14em;
+    color: var(--ivory);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.6);
+  }
+  #clock-phase {
+    margin-top: 6px;
+    font-size: 9.5px; letter-spacing: 0.5em; font-weight: 400;
+    color: var(--gold-bright); text-transform: uppercase;
+  }
+  #clock-sub {
+    margin-top: 3px;
+    font-size: 8.5px; letter-spacing: 0.3em; font-weight: 300;
+    color: rgba(242,237,227,0.5); text-transform: uppercase;
+  }
+
+  /* bottom micro strip */
+  #hud-bottom {
+    bottom: 30px; left: 44px; right: 48px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 8.5px; letter-spacing: 0.34em; font-weight: 300;
+    color: rgba(242,237,227,0.55); text-transform: uppercase;
+  }
+  #hud-bottom .itin { font-variant-numeric: tabular-nums; }
+  #scroll-cue {
+    position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+    z-index: 10; pointer-events: none; text-align: center;
+    transition: opacity 0.8s ease;
+  }
+  #scroll-cue .line {
+    width: 1px; height: 44px; margin: 12px auto 0;
+    background: linear-gradient(to bottom, var(--gold-bright), transparent);
+    animation: cue 2.2s ease-in-out infinite;
+  }
+  @keyframes cue { 0%,100% { transform: scaleY(0.4); opacity:.3 } 50% { transform: scaleY(1); opacity:1 } }
+  #scroll-cue .txt {
+    font-size: 9px; letter-spacing: 0.5em; color: rgba(242,237,227,0.8);
+    text-transform: uppercase; font-weight: 300;
+  }
+
+  /* ---------- pinned sections ---------- */
+  .zone-card {
+    position: fixed; z-index: 8; pointer-events: none;
+    max-width: 620px;
+    opacity: 0; visibility: hidden;
+  }
+  /* soft scrim so type never fights the footage */
+  .zone-card::before {
+    content: ""; position: absolute; inset: -70px -90px; z-index: -1;
+    background: radial-gradient(ellipse at center,
+      rgba(8,6,3,0.66), rgba(8,6,3,0.38) 55%, rgba(8,6,3,0) 78%);
+  }
+  .zone-card.left  { left: 17vw; top: 50%; transform: translateY(-50%); }
+  .zone-card.right { right: 8vw; top: 50%; transform: translateY(-50%); text-align: right; }
+  .zone-card.center { left: 50%; top: 50%; transform: translate(-50%,-50%); text-align: center; max-width: 900px; }
+
+  .eyebrow {
+    font-size: 10px; letter-spacing: 0.52em; font-weight: 400;
+    color: var(--gold-bright); text-transform: uppercase;
+    margin-bottom: 26px;
+  }
+  .eyebrow::after {
+    content: ""; display: block; width: 44px; height: 1px;
+    background: var(--gold); margin-top: 14px;
+  }
+  .zone-card.right .eyebrow::after { margin-left: auto; }
+  .zone-card.center .eyebrow::after { margin-left: auto; margin-right: auto; }
+
+  h1, h2 {
+    font-family: var(--serif); font-weight: 400;
+    color: var(--ivory);
+    text-shadow: 0 2px 30px rgba(0,0,0,0.55);
+  }
+  h1 { font-size: clamp(44px, 5.6vw, 84px); line-height: 1.06; letter-spacing: 0.005em; }
+  h2 { font-size: clamp(34px, 3.9vw, 60px); line-height: 1.1; }
+  .gold-i { color: var(--gold-bright); font-style: italic; }
+
+  .body-copy {
+    margin-top: 26px;
+    font-size: 14.5px; font-weight: 300; line-height: 2;
+    letter-spacing: 0.04em;
+    color: rgba(242,237,227,0.94);
+    max-width: 46ch;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.8);
+  }
+  .eyebrow, .sig-line, .spec .k, .spec .v {
+    text-shadow: 0 1px 12px rgba(0,0,0,0.8);
+  }
+  .zone-card.right .body-copy { margin-left: auto; }
+  .zone-card.center .body-copy { margin-left: auto; margin-right: auto; }
+
+  .sig-line {
+    margin-top: 30px;
+    font-family: var(--serif); font-style: italic;
+    font-size: 19px; color: var(--gold-bright); line-height: 1.6;
+  }
+
+  /* spec callouts */
+  .specs {
+    margin-top: 38px; display: flex; gap: 0;
+    border-top: 1px solid rgba(176,141,62,0.35);
+  }
+  .zone-card.right .specs { justify-content: flex-end; }
+  .spec {
+    padding: 18px 28px 0 0; margin-right: 28px;
+  }
+  .zone-card.right .spec { padding: 18px 0 0 28px; margin-right: 0; margin-left: 28px; }
+  .spec .k {
+    font-size: 8.5px; letter-spacing: 0.4em; font-weight: 300;
+    color: rgba(242,237,227,0.55); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .spec .v {
+    font-family: var(--serif);
+    font-size: 21px; color: var(--ivory); font-weight: 400;
+  }
+  .spec .v small { font-size: 12px; color: var(--gold-bright); letter-spacing: .1em; }
+
+  /* experiences reel */
+  .reel {
+    margin-top: 30px; display: flex; flex-wrap: wrap; gap: 11px;
+    max-width: 640px;
+  }
+  .reel figure {
+    position: relative; width: 168px; overflow: hidden;
+    border: 1px solid rgba(176,141,62,0.35);
+  }
+  .reel video {
+    display: block; width: 100%; aspect-ratio: 16/10; object-fit: cover;
+    filter: saturate(1.05) contrast(1.03);
+  }
+  .reel figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 22px 10px 8px;
+    background: linear-gradient(to top, rgba(6,4,2,0.85), transparent);
+    font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ivory); font-weight: 300;
+  }
+  .reel figcaption b { color: var(--gold-bright); font-weight: 400; }
+  @media (max-width: 900px) { .reel { flex-wrap: wrap; } }
+
+  /* CTA */
+  .cta-row { margin-top: 44px; pointer-events: auto; }
+  .btn {
+    display: inline-block; text-decoration: none;
+    font-family: var(--hud-font); font-size: 11px; font-weight: 400;
+    letter-spacing: 0.44em; text-transform: uppercase;
+    color: var(--ink); background: var(--gold-bright);
+    padding: 20px 46px 19px 50px;
+    transition: background .35s ease, color .35s ease, box-shadow .35s ease;
+  }
+  .btn:hover { background: var(--ivory); box-shadow: 0 6px 40px rgba(212,175,106,0.35); }
+  .btn.ghost {
+    background: transparent; color: var(--ivory);
+    border: 1px solid rgba(212,175,106,0.6); margin-left: 18px;
+  }
+  .btn.ghost:hover { border-color: var(--ivory); color: var(--gold-bright); }
+  .contact-micro {
+    margin-top: 30px; font-size: 10px; letter-spacing: 0.4em;
+    color: rgba(242,237,227,0.6); text-transform: uppercase; line-height: 2.4;
+  }
+  .contact-micro a { color: var(--gold-bright); text-decoration: none; pointer-events: auto; }
+
+  /* ---------- loader ---------- */
+  #loader {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 1.1s ease, visibility 1.1s;
+  }
+  #loader.done { opacity: 0; visibility: hidden; }
+  #loader .mono { margin-bottom: 40px; }
+  /* --- animated logo intro --- */
+  #intro-logo svg { width: min(52vw, 250px); height: auto; display: block; }
+  #intro-logo .mono {
+    fill-opacity: 0;
+    stroke: #e8cf96; stroke-width: 22; stroke-opacity: 1;
+  }
+  #intro-logo .viptext, #intro-logo .underline { opacity: 0; }
+  #intro-logo svg.draw .mono {
+    transition: stroke-dashoffset 2.3s cubic-bezier(0.45, 0, 0.2, 1);
+    stroke-dashoffset: 0 !important;
+  }
+  #intro-logo svg.fill .mono {
+    transition: fill-opacity 1.1s ease, stroke-opacity 1.2s ease;
+    fill-opacity: 1; stroke-opacity: 0;
+  }
+  #intro-logo svg.fill .viptext,
+  #intro-logo svg.fill .underline {
+    transition: opacity 1.2s ease 0.35s;
+    opacity: 1;
+  }
+  #skip-intro {
+    position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%);
+    background: none; border: none; cursor: pointer;
+    font-family: var(--hud-font); font-size: 9px; font-weight: 300;
+    letter-spacing: 0.5em; text-transform: uppercase;
+    color: rgba(242,237,227,0.45);
+    padding: 12px 20px;
+    transition: color .3s ease;
+  }
+  #skip-intro:hover { color: var(--gold-bright); }
+  #load-track { width: 220px; height: 1px; background: rgba(242,237,227,0.15); }
+  #load-fill { width: 0%; height: 1px; background: var(--gold-bright); transition: width .2s ease; }
+  #load-label {
+    margin-top: 20px; font-size: 9px; letter-spacing: 0.5em;
+    color: rgba(242,237,227,0.6); text-transform: uppercase; font-weight: 300;
+  }
+  @media (max-width: 900px) {
+    #hud-rail { display: none; }
+    .zone-card.left, .zone-card.right { left: 7vw; right: 7vw; text-align: left; max-width: none; }
+    .zone-card.right { transform: translateY(-50%); }
+    h1 { font-size: 11vw; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="mono"><div id="intro-logo"></div></div>
+  <div id="load-track"><div id="load-fill"></div></div>
+  <div id="load-label">Arranging your day</div>
+  <button id="skip-intro">Skip intro</button>
+</div>
+
+<canvas id="film"></canvas>
+<div id="tint"></div>
+<div id="grade"></div>
+<canvas id="grain"></canvas>
+
+<!-- HUD -->
+<div class="hud" id="hud-brand">
+  <img src="logo.svg" alt="A-Type VIP" style="width:68px;height:auto;display:block;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5))">
+  <div class="wordline"><b>A-Type VIP</b></div>
+</div>
+
+<div class="hud" id="hud-top-right">
+  <span class="gold">Membership</span> · By application<br>
+  <a id="contact-pill" href="https://wa.me/447386538896?text=Hello%20A-Type%20VIP%20%E2%80%94%20I%27d%20like%20to%20start%20the%20conversation." target="_blank" rel="noopener">Contact us</a>
+</div>
+
+<div class="hud" id="hud-rail">
+  <div id="rail-track">
+    <div id="rail-fill"></div>
+    <div id="rail-dot"></div>
+  </div>
+  <div id="hud-clock">
+    <div id="clock-time">06:00</div>
+    <div id="clock-phase">Dawn</div>
+    <div id="clock-sub">Local time · Day 01</div>
+  </div>
+</div>
+
+<div class="hud" id="hud-bottom">
+  <span>A-Type VIP</span>
+  <span class="itin" id="itin">Itinerary 01 / 05</span>
+</div>
+
+<div id="scroll-cue">
+  <div class="txt">Scroll to begin the day</div>
+  <div class="line"></div>
+</div>
+
+<!-- ZONE CARDS -->
+<div class="zone-card center" id="card-0">
+  <div class="eyebrow">A different way to live</div>
+  <h1>Time is life's<br><span class="gold-i">greatest luxury.</span></h1>
+  <div class="body-copy" style="margin-top:30px">
+    One day with A-Type VIP, from wheels-up to midnight.
+    Every detail already taken care of — before you ever have to think about it.
+  </div>
+</div>
+
+<div class="zone-card left" id="card-1">
+  <div class="eyebrow">06:48 — Private Travel</div>
+  <h2>Every journey begins<br><span class="gold-i">before you arrive.</span></h2>
+  <div class="body-copy">
+    Private aviation, luxury accommodation, chauffeured transfers —
+    every element works seamlessly together, allowing you to travel
+    with complete confidence and absolute ease.
+  </div>
+  <div class="sig-line">Every detail arranged<br>before you even think to ask.</div>
+</div>
+
+<div class="zone-card right" id="card-2">
+  <div class="eyebrow">11:20 — The Arrival</div>
+  <h2>Wherever life takes you,<br><span class="gold-i">it's already arranged.</span></h2>
+  <div class="body-copy">
+    A car waiting at the steps. A coast road with nothing to decide.
+    Whether it's a last-minute escape or a multi-country itinerary,
+    every journey is thoughtfully planned around you.
+  </div>
+  <div class="sig-line">Travel should feel effortless.<br>We'll make sure it does.</div>
+</div>
+
+<div class="zone-card left" id="card-3" style="max-width:660px; top:55%">
+  <div class="eyebrow" style="margin-bottom:18px">19:34 — Experiences &amp; Private Access</div>
+  <h2 style="font-size:clamp(26px,2.9vw,44px)">Some moments can't be bought.<br><span class="gold-i">Only accessed.</span></h2>
+  <div class="body-copy">
+    From world-class events and sold-out performances to invitation-only
+    occasions, access comes through trusted relationships and carefully
+    cultivated connections — arranged long before the doors open.
+  </div>
+  <div class="reel" style="margin-top:24px">
+    <figure><video src="showcase-tennis.mp4" muted autoplay loop playsinline></video><figcaption><b>Centre court</b> · The championships</figcaption></figure>
+    <figure><video src="showcase-f1.mp4" muted autoplay loop playsinline></video><figcaption><b>Grid side</b> · Grand prix</figcaption></figure>
+    <figure><video src="showcase-club.mp4" muted autoplay loop playsinline></video><figcaption><b>Beach club</b> · Island sets</figcaption></figure>
+    <figure><video src="showcase-ascot.mp4" muted autoplay loop playsinline></video><figcaption><b>Race day</b> · Royal enclosure</figcaption></figure>
+    <figure><video src="showcase-yacht.mp4" muted autoplay loop playsinline></video><figcaption><b>Monaco</b> · Superyacht charter</figcaption></figure>
+    <figure><video src="showcase-ski.mp4" muted autoplay loop playsinline></video><figcaption><b>Alpine</b> · First tracks</figcaption></figure>
+  </div>
+  <div class="sig-line">Luxury is having someone you trust,<br>one call away.</div>
+</div>
+
+<div class="zone-card right" id="card-4">
+  <div class="eyebrow">21:07 — Dining &amp; Hospitality</div>
+  <h2>The best tables are<br><span class="gold-i">rarely advertised.</span></h2>
+  <div class="body-copy">
+    Chef's tables, private dining rooms and sought-after reservations —
+    our network opens doors that remain closed to most.
+  </div>
+  <div class="sig-line">Some reservations are made.<br>The memorable ones are arranged.</div>
+</div>
+
+<div class="zone-card center" id="card-5">
+  <div class="eyebrow">00:00 — Membership</div>
+  <h2>One relationship.<br><span class="gold-i">Every possibility.</span></h2>
+  <div class="body-copy">
+    With a dedicated team, every request is managed through a single trusted
+    relationship. Whether you're planning months ahead or responding to
+    last-minute requests, we're always one conversation away.
+  </div>
+  <div class="specs" style="justify-content:center">
+    <div class="spec"><div class="k">Dedicated</div><div class="v">Concierge</div></div>
+    <div class="spec"><div class="k">Available</div><div class="v">24 / 7</div></div>
+    <div class="spec"><div class="k">Memberships</div><div class="v">Strictly <small>limited</small></div></div>
+  </div>
+  <div class="sig-line">Membership begins with a conversation.</div>
+  <div class="cta-row">
+    <a class="btn" href="https://wa.me/447386538896?text=Hello%20A-Type%20VIP%20%E2%80%94%20I%27d%20like%20to%20start%20the%20conversation." target="_blank" rel="noopener">Start the Conversation</a>
+  </div>
+  <div class="contact-micro">
+    info@atypevip.com &nbsp;·&nbsp; 07386 538 896 &nbsp;·&nbsp; <a href="https://instagram.com/atypevip">@atypevip</a>
+  </div>
+</div>
+
+<div id="scroll-space"></div>
+
+<script>
+/* ================= CONFIG (patched by build) ================= */
+const FRAME_COUNT = 557;
+const FRAME_PAD   = 4;
+const FRAME_DIR   = 'frames';
+const FRAME_EXT   = 'jpg';
+// frame index where each clip starts, plus total (length 6)
+const CLIP_BOUNDS = [0, 109, 218, 327, 436, 557];
+
+const PHASES = [
+  { name: 'Dawn',        t0: 6.0,   t1: 8.5  },
+  { name: 'Morning',     t0: 8.5,   t1: 13.0 },
+  { name: 'Golden Hour', t0: 13.0,  t1: 20.0 },
+  { name: 'Evening',     t0: 20.0,  t1: 22.5 },
+  { name: 'Midnight',    t0: 22.5,  t1: 24.0 },
+];
+const SCROLL_PER_ZONE = 170;      // vh per zone
+const ZONES = 5;
+
+/* ================= scroll space ================= */
+const space = document.getElementById('scroll-space');
+space.style.height = (ZONES * SCROLL_PER_ZONE + 100) + 'vh';
+
+/* ================= frame preloading ================= */
+const frames = new Array(FRAME_COUNT);
+let loadedCount = 0;
+const loader = document.getElementById('loader');
+const loadFill = document.getElementById('load-fill');
+let framesDone = false, introDone = false;
+
+function maybeReveal() {
+  if (framesDone && introDone) loader.classList.add('done');
+}
+function src(i) {
+  return `${FRAME_DIR}/f_${String(i + 1).padStart(FRAME_PAD, '0')}.${FRAME_EXT}`;
+}
+function preload() {
+  for (let i = 0; i < FRAME_COUNT; i++) {
+    const img = new Image();
+    img.onload = () => {
+      loadedCount++;
+      const pct = loadedCount / FRAME_COUNT;
+      loadFill.style.width = (pct * 100).toFixed(1) + '%';
+      if (!framesDone && (loadedCount === FRAME_COUNT)) {
+        framesDone = true;
+        setTimeout(maybeReveal, 350);
+      }
+    };
+    img.src = src(i);
+    frames[i] = img;
+  }
+}
+preload();
+
+/* --- animated logo intro (draw -> gold fill -> hold -> fade); once per session --- */
+const skipBtn = document.getElementById('skip-intro');
+function finishIntro(delay) {
+  setTimeout(() => {
+    introDone = true;
+    try { sessionStorage.setItem('atvIntroSeen', '1'); } catch (e) {}
+    skipBtn.style.display = 'none';
+    maybeReveal();
+  }, delay);
+}
+fetch('logo.svg').then(r => r.text()).then(txt => {
+  const holder = document.getElementById('intro-logo');
+  holder.innerHTML = txt;
+  const svg = holder.querySelector('svg');
+  let seen = false;
+  try { seen = !!sessionStorage.getItem('atvIntroSeen'); } catch (e) {}
+  if (seen) { // returning visitor this session: no replay, quick elegant fade-in
+    svg.classList.add('draw', 'fill');
+    svg.querySelectorAll('.mono').forEach(p => { p.style.strokeDasharray = 'none'; });
+    finishIntro(500);
+    return;
+  }
+  svg.querySelectorAll('.mono').forEach(p => {
+    const L = p.getTotalLength();
+    p.style.strokeDasharray = L;
+    p.style.strokeDashoffset = L;
+  });
+  svg.getBoundingClientRect();                                // commit start state
+  setTimeout(() => {
+    svg.classList.add('draw');                                // trace the outline
+    setTimeout(() => svg.classList.add('fill'), 2100);        // pour in the gold
+    setTimeout(() => finishIntro(0), 3900);                   // hold, then release
+  }, 80);
+  skipBtn.addEventListener('click', () => {
+    svg.classList.add('draw', 'fill');
+    finishIntro(0);
+  });
+}).catch(() => { introDone = true; maybeReveal(); });
+
+/* ================= canvas ================= */
+const canvas = document.getElementById('film');
+const ctx = canvas.getContext('2d');
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = innerWidth * dpr;
+  canvas.height = innerHeight * dpr;
+}
+addEventListener('resize', resize); resize();
+
+function drawCover(img) {
+  if (!img || !img.complete || !img.naturalWidth) return;
+  const cw = canvas.width, ch = canvas.height;
+  const ir = img.naturalWidth / img.naturalHeight, cr = cw / ch;
+  let dw, dh;
+  if (ir > cr) { dh = ch; dw = ch * ir; } else { dw = cw; dh = cw / ir; }
+  ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+}
+
+/* grain */
+const grain = document.getElementById('grain');
+const gctx = grain.getContext('2d');
+grain.width = 300; grain.height = 300;
+grain.style.width = 'calc(100vw + 200px)'; grain.style.height = 'calc(100vh + 200px)';
+function renderGrain() {
+  const d = gctx.createImageData(300, 300);
+  for (let i = 0; i < d.data.length; i += 4) {
+    const v = Math.random() * 255;
+    d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 40;
+  }
+  gctx.putImageData(d, 0, 0);
+}
+setInterval(renderGrain, 120); renderGrain();
+
+/* ================= scrub state ================= */
+let target = 0, current = 0;
+function onScroll() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  target = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+}
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+const cards = [...Array(6)].map((_, i) => document.getElementById('card-' + i));
+const clockTime = document.getElementById('clock-time');
+const clockPhase = document.getElementById('clock-phase');
+const railFill = document.getElementById('rail-fill');
+const railDot = document.getElementById('rail-dot');
+const itin = document.getElementById('itin');
+const cue = document.getElementById('scroll-cue');
+const tint = document.getElementById('tint');
+const railTrack = document.getElementById('rail-track');
+const stops = [];
+
+PHASES.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'rail-stop';
+  el.style.top = (i / (PHASES.length - 1)) * 100 + '%';
+  el.innerHTML = `<span>${p.name}</span>`;
+  railTrack.appendChild(el);
+  stops.push(el);
+});
+
+function fmtTime(h) {
+  h = h % 24;
+  const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
+  return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+}
+
+/* card visibility: each zone i occupies [i/5,(i+1)/5]; hero card in first 12% */
+function cardAlpha(p, i) {
+  if (i === 0) { // hero
+    return p < 0.055 ? 1 : Math.max(0, 1 - (p - 0.055) / 0.045);
+  }
+  const z = i - 1;
+  const z0 = z / ZONES, z1 = (z + 1) / ZONES;
+  const zp = (p - z0) / (z1 - z0);
+  if (i === 5) { // final card holds
+    if (zp < 0.35) return Math.max(0, (zp - 0.1) / 0.25);
+    return 1;
+  }
+  if (zp < 0.28 || zp > 0.95) return 0;
+  if (zp < 0.42) return (zp - 0.28) / 0.14;
+  if (zp > 0.82) return 1 - (zp - 0.82) / 0.13;
+  return 1;
+}
+
+function tick() {
+  requestAnimationFrame(tick);
+  current += (target - current) * 0.085;
+  if (Math.abs(target - current) < 0.0004) current = target;
+  const p = current;
+
+  /* frame: map each scroll zone exactly onto its clip's frame range */
+  if (FRAME_COUNT > 0) {
+    const zfF = Math.min(ZONES - 1e-6, p * ZONES);
+    const ziF = Math.floor(zfF), zpF = zfF - ziF;
+    const f0 = CLIP_BOUNDS[ziF], f1 = CLIP_BOUNDS[ziF + 1];
+    let idx = Math.min(FRAME_COUNT - 1, f0 + Math.floor(zpF * (f1 - f0)));
+    let img = frames[idx];
+    let step = 0;
+    while ((!img || !img.complete || !img.naturalWidth) && step < 40) { idx = Math.max(0, idx - 1); img = frames[idx]; step++; }
+    drawCover(img);
+  }
+
+  /* clock: 06:00 -> 24:00 across phases (piecewise per zone) */
+  const zf = Math.min(ZONES - 1e-6, p * ZONES);
+  const zi = Math.floor(zf), zp = zf - zi;
+  const ph = PHASES[zi];
+  const hour = ph.t0 + (ph.t1 - ph.t0) * zp;
+  clockTime.textContent = fmtTime(hour === 24 ? 0 : hour);
+  clockPhase.textContent = ph.name;
+  itin.textContent = 'Itinerary 0' + (zi + 1) + ' / 05';
+  railFill.style.height = (p * 100) + '%';
+  railDot.style.top = (p * 100) + '%';
+  stops.forEach((s, i) => s.classList.toggle('active', i === zi));
+
+  /* tint: warm ivory dawn -> deep black midnight */
+  const nightA = Math.max(0, (p - 0.45) / 0.55) * 0.35;
+  const dawnA = Math.max(0, (0.18 - p) / 0.18) * 0.12;
+  tint.style.background =
+    `linear-gradient(to bottom, rgba(240,215,170,${dawnA}), transparent 40%),` +
+    `linear-gradient(to bottom, transparent, rgba(2,2,6,${nightA}))`;
+
+  /* cards */
+  cards.forEach((c, i) => {
+    const a = cardAlpha(p, i);
+    c.style.opacity = a.toFixed(3);
+    c.style.visibility = a <= 0.01 ? 'hidden' : 'visible';
+    const dy = (1 - a) * 26;
+    if (c.classList.contains('center')) c.style.transform = `translate(-50%, calc(-50% + ${dy}px))`;
+    else c.style.transform = `translateY(calc(-50% + ${dy}px))`;
+  });
+
+  cue.style.opacity = p < 0.01 ? 1 : 0;
+}
+tick();
+</script>
+</body>
+</html>
