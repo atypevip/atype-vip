@@ -529,56 +529,7 @@
 
 <div id="scroll-space"></div>
 
-<!-- ============ WHAT WE DO PREVIEW ============ -->
-<section class="page-section" id="home-services">
-  <div class="reveal">
-    <div class="eyebrow">What we do</div>
-    <h2>Every detail, <span class="gold-i">handled.</span></h2>
-    <p class="lead">
-      Travel, dining, nightlife, hospitality and the requests that cannot be found
-      on a standard itinerary. A-TYPE VIP brings everything together through one
-      trusted point of contact.
-    </p>
-  </div>
-  <div class="card-grid reveal">
-    <a class="svc-card" href="what-we-do.html#travel"><img src="img/travel.jpg" alt="Luxury Travel" loading="lazy"><div class="label"><div class="t">Travel</div><div class="d">Journeys built around you</div></div></a>
-    <a class="svc-card" href="what-we-do.html#dining"><img src="img/dining.jpg" alt="Dining" loading="lazy"><div class="label"><div class="t">Dining</div><div class="d">The right table, arranged</div></div></a>
-    <a class="svc-card" href="what-we-do.html#nightlife"><img src="img/club.jpg" alt="Nightlife" loading="lazy"><div class="label"><div class="t">Nightlife</div><div class="d">Access with atmosphere</div></div></a>
-    <a class="svc-card" href="what-we-do.html#villas"><img src="img/villas.jpg" alt="Villas" loading="lazy"><div class="label"><div class="t">Villas</div><div class="d">Private stays, worldwide</div></div></a>
-    <a class="svc-card" href="what-we-do.html#aviation"><img src="img/aviation.jpg" alt="Private Aviation" loading="lazy"><div class="label"><div class="t">Private Aviation</div><div class="d">On your schedule</div></div></a>
-    <a class="svc-card" href="hospitality.html"><img src="img/f1.jpg" alt="Hospitality" loading="lazy"><div class="label"><div class="t">Hospitality</div><div class="d">The events that define the calendar</div></div></a>
-  </div>
-  <div class="section-cta reveal"><a class="btn" href="what-we-do.html">Explore What We Do</a></div>
-</section>
 
-<!-- ============ HOSPITALITY PREVIEW ============ -->
-<section class="page-section" id="home-hospitality" style="background:#080604">
-  <div class="reveal">
-    <div class="eyebrow">Hospitality</div>
-    <h2>The best seat <span class="gold-i">in the house.</span></h2>
-    <p class="lead">
-      From the grid to centre court, we arrange premium access to the world's
-      defining sporting and entertainment occasions.
-    </p>
-  </div>
-  <div class="card-grid reveal">
-    <a class="svc-card" href="hospitality.html#f1"><video src="showcase-f1.mp4" muted autoplay loop playsinline></video><div class="label"><div class="t">Formula 1</div><div class="d">Race weekends, properly</div></div></a>
-    <a class="svc-card" href="hospitality.html#football"><img src="img/football.jpg" alt="Football" loading="lazy"><div class="label"><div class="t">Football</div><div class="d">Private boxes &amp; premium seats</div></div></a>
-    <a class="svc-card" href="hospitality.html#tennis"><video src="showcase-tennis.mp4" muted autoplay loop playsinline></video><div class="label"><div class="t">Wimbledon</div><div class="d">Centre Court, arranged</div></div></a>
-    <a class="svc-card" href="hospitality.html#racing"><video src="showcase-ascot.mp4" muted autoplay loop playsinline></video><div class="label"><div class="t">Royal Ascot</div><div class="d">Race day, refined</div></div></a>
-    <a class="svc-card" href="hospitality.html#boxing"><img src="img/boxing.jpg" alt="Boxing" loading="lazy"><div class="label"><div class="t">Boxing</div><div class="d">Ringside, on the night</div></div></a>
-    <a class="svc-card" href="hospitality.html#concerts"><img src="img/concerts.jpg" alt="Concerts" loading="lazy"><div class="label"><div class="t">Concerts</div><div class="d">The best view of the show</div></div></a>
-  </div>
-  <div class="section-cta reveal"><a class="btn" href="hospitality.html">Explore Hospitality</a></div>
-</section>
-
-<footer class="atv-footer">
-  <img src="logo.svg" alt="A-TYPE VIP">
-  <div class="fc">
-    A-TYPE VIP · Membership by application<br>
-    <a href="https://wa.me/447386538896?text=Hello%20A-TYPE%20VIP%2C%20I%27d%20like%20to%20start%20the%20conversation.">WhatsApp 07386 538 896</a> · <a href="mailto:info@atypevip.com">info@atypevip.com</a> · <a href="https://instagram.com/atypevip">@atypevip</a>
-  </div>
-</footer>
 
 <script>
 /* ================= CONFIG (patched by build) ================= */
@@ -616,21 +567,43 @@ function maybeReveal() {
 function src(i) {
   return `${FRAME_DIR}/f_${String(i + 1).padStart(FRAME_PAD, '0')}.${FRAME_EXT}`;
 }
+/* Two-phase preload: a sparse "skeleton" of every 6th frame unlocks the site fast
+   (~6MB instead of ~35MB); the remaining frames stream in behind the scenes and
+   the scrub swaps to full smoothness as they arrive. */
 function preload() {
+  const PRI = 6;
+  const phase1 = [], phase2 = [];
   for (let i = 0; i < FRAME_COUNT; i++) {
+    (i % PRI === 0 || i === FRAME_COUNT - 1 ? phase1 : phase2).push(i);
+  }
+  let p1 = 0;
+  const load = (i, isP1) => {
     const img = new Image();
     img.onload = () => {
       loadedCount++;
-      const pct = loadedCount / FRAME_COUNT;
-      loadFill.style.width = (pct * 100).toFixed(1) + '%';
-      if (!framesDone && (loadedCount === FRAME_COUNT)) {
-        framesDone = true;
-        setTimeout(maybeReveal, 350);
+      if (isP1) {
+        p1++;
+        loadFill.style.width = (p1 / phase1.length * 100).toFixed(1) + '%';
+        if (!framesDone && p1 === phase1.length) {
+          framesDone = true;
+          setTimeout(maybeReveal, 250);
+          let k = 0;
+          const next = () => {          // stream the rest, 6 at a time
+            for (let n = 0; n < 6 && k < phase2.length; n++) load(phase2[k++], false);
+          };
+          const iv = setInterval(() => {
+            if (k >= phase2.length) { clearInterval(iv); return; }
+            next();
+          }, 120);
+          next();
+        }
       }
     };
+    img.onerror = img.onload;
     img.src = src(i);
     frames[i] = img;
-  }
+  };
+  phase1.forEach(i => load(i, true));
 }
 preload();
 
@@ -827,8 +800,6 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     const end = filmExtent();
     if (to === 'story') scrollTo(0, end * 0.10);
     else if (to === 'membership') scrollTo(0, end * 0.97);
-    else if (to === 'services') document.getElementById('home-services').scrollIntoView();
-    else if (to === 'hospitality') document.getElementById('home-hospitality').scrollIntoView();
   };
   const wait = setInterval(() => {
     if (loader.classList.contains('done')) { clearInterval(wait); setTimeout(go, 300); }

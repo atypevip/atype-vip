@@ -155,7 +155,7 @@
       </div>
       <nav class="atv-nav">
         <div class="item"><a class="main" href="index.html"><span class="num">01</span>Home</a></div>
-        <div class="item"><a class="main" href="index.html?to=story"><span class="num">02</span>About A-TYPE VIP</a></div>
+        <div class="item"><a class="main" href="about.html"><span class="num">02</span>About A-TYPE VIP</a></div>
         <div class="item" id="atv-wwd-item">
           <button class="main" id="atv-wwd-toggle"><span class="num">03</span>What We Do<span class="caret">+</span></button>
           <div class="sub">

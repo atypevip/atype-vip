@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — A-TYPE VIP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="page.css">
+<style>
+  .quote-band {
+    text-align: center; padding: 12vh 8vw;
+    background: linear-gradient(160deg, rgba(176,141,62,0.06), transparent 60%), #080604;
+  }
+  .quote-band .q {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(22px, 2.6vw, 38px); line-height: 1.5;
+    color: var(--gold-bright); max-width: 30ch; margin: 0 auto;
+  }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; align-items: center; }
+  .split .img-side { overflow: hidden; border: 1px solid rgba(176,141,62,0.25); }
+  .split .img-side img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .team-grid {
+    margin-top: 6vh; display: grid;
+    grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .member { text-align: center; }
+  .member .ph {
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(176,141,62,0.3);
+    aspect-ratio: 4 / 5; background: #111;
+    isolation: isolate;
+  }
+  .member .ph img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(1) contrast(1.02);
+    transition: transform 1s cubic-bezier(.2,.6,.2,1), filter .6s ease;
+  }
+  .member .ph::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(176,141,62,0.14), transparent 40%);
+    mix-blend-mode: multiply;
+  }
+  .member:hover .ph img { transform: scale(1.04); filter: grayscale(0.7) contrast(1.03); }
+  .member h3 {
+    margin-top: 22px; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(18px, 1.8vw, 26px);
+  }
+  .member .role {
+    margin-top: 8px; font-size: 9.5px; font-weight: 300;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gold-bright);
+  }
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; max-width: 380px; margin-left: auto; margin-right: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <a href="index.html"><img src="logo.svg" alt="A-TYPE VIP"><span class="wd">A-Type VIP</span></a>
+</header>
+
+<div class="page-hero">
+  <div class="bg" style="background-image:url('img/villas.jpg')"></div>
+  <div class="eyebrow">About A-TYPE VIP</div>
+  <h1>Time is life's<br><span class="gold-i">greatest luxury.</span></h1>
+  <p class="lead">
+    At A-TYPE VIP, we exist to protect it. Whether you're crossing time zones,
+    planning life's biggest moments, or simply making space for what matters most,
+    every detail is already taken care of — before you even have to think about it.
+  </p>
+</div>
+
+<section class="band">
+  <div class="split reveal">
+    <div>
+      <div class="eyebrow">The A-Type approach</div>
+      <h2>Thoughtfully considered.<br><span class="gold-i">Effortlessly delivered.</span></h2>
+      <p class="lead" style="margin-top:22px">
+        Exceptional service isn't measured by the number of requests fulfilled,
+        but by the moments you never have to think about. Every detail begins
+        long before you ask — through trusted relationships, careful planning
+        and a deep understanding of how you live, we anticipate your needs
+        before they become requests.
+      </p>
+      <p class="lead" style="margin-top:18px">
+        Our role isn't simply to organise. It's to anticipate, simplify and
+        remove complexity from everyday life, allowing you to focus on what
+        truly matters.
+      </p>
+    </div>
+    <div class="img-side"><img src="img/dining.jpg" alt="A-TYPE VIP experience" loading="lazy"></div>
+  </div>
+</section>
+
+<div class="quote-band reveal">
+  <div class="q">"Luxury isn't found in the extraordinary.<br>It's found in how effortlessly it all comes together."</div>
+</div>
+
+<section class="band">
+  <div class="reveal">
+    <div class="eyebrow">Meet the team</div>
+    <h2>Every relationship begins<br><span class="gold-i">with one person.</span></h2>
+    <p class="lead">
+      As your dedicated point of contact, our team oversees every aspect of your
+      experience — a highly personal service built on discretion, trust and
+      exceptional attention to detail. Every request is managed with precision,
+      efficiency and absolute professionalism.
+    </p>
+  </div>
+  <div class="team-grid">
+    <div class="member reveal">
+      <div class="ph"><img src="img/team-taylor.jpg" alt="Taylor Maloney" loading="lazy"></div>
+      <h3>Taylor Maloney</h3>
+      <div class="role">A-TYPE VIP</div>
+    </div>
+    <div class="member reveal">
+      <div class="ph"><img src="img/team-alfie.jpg" alt="Alfie Pavey" loading="lazy"></div>
+      <h3>Alfie Pavey</h3>
+      <div class="role">Concierge Director</div>
+    </div>
+    <div class="member reveal">
+      <div class="ph"><img src="img/team-tyler.jpg" alt="Tyler Brown" loading="lazy"></div>
+      <h3>Tyler Brown</h3>
+      <div class="role">A-TYPE VIP</div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" style="text-align:center">
+  <div class="reveal">
+    <div class="eyebrow" style="display:inline-block">Membership</div>
+    <h2>Every great experience<br><span class="gold-i">starts with a conversation.</span></h2>
+    <div style="margin-top:5vh"><a class="btn" data-wa="Hello A-TYPE VIP, I would like to start the conversation." href="#">Start the Conversation</a></div>
+  </div>
+</section>
+
+<footer class="atv-footer">
+  <img src="logo.svg" alt="A-TYPE VIP">
+  <div class="fc">
+    A-TYPE VIP · Membership by application<br>
+    <a data-wa="Hello A-TYPE VIP, I would like to start the conversation." href="#">WhatsApp 07386 538 896</a> · <a href="mailto:info@atypevip.com">info@atypevip.com</a> · <a href="https://instagram.com/atypevip">@atypevip</a>
+  </div>
+</footer>
+
+<script src="menu.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-wa]').forEach(a => {
+    a.href = 'https://wa.me/447386538896?text=' + encodeURIComponent(a.dataset.wa);
+    a.target = '_blank'; a.rel = 'noopener';
+  });
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('in');
+  }), { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+});
+</script>
+</body>
+</html>
