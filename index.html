@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A-Type VIP — One Day, Perfectly Arranged</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0C0A07">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -394,6 +398,40 @@
     .zone-card.left, .zone-card.right { left: 7vw; right: 7vw; text-align: left; max-width: none; }
     .zone-card.right { transform: translateY(-50%); }
     h1 { font-size: 11vw; }
+  }
+  /* ---------- phone ---------- */
+  @media (max-width: 700px) {
+    #hud-brand { top: 20px; left: 18px; gap: 10px; }
+    #hud-brand img { width: 42px !important; }
+    #hud-brand .wordline { font-size: 10px; padding-left: 10px; letter-spacing: 0.3em; }
+    #hud-top-right, #hud-bottom { display: none; }
+    #scroll-cue { bottom: 46px; }
+    .zone-card { max-width: none; }
+    .zone-card::before { inset: -50px -60px; }
+    h1 { font-size: 12vw; line-height: 1.1; }
+    h2 { font-size: 8.4vw !important; line-height: 1.15; }
+    .body-copy { font-size: 13px; line-height: 1.85; margin-top: 18px; }
+    .eyebrow { font-size: 9px; letter-spacing: 0.4em; margin-bottom: 16px; }
+    .sig-line { font-size: 16px; margin-top: 20px; }
+    .specs { flex-wrap: wrap; margin-top: 24px; }
+    .spec { padding: 14px 18px 0 0; margin-right: 14px; }
+    .spec .v { font-size: 17px; }
+    .reel { gap: 8px; margin-top: 18px !important; }
+    .reel figure { width: calc(50% - 4px); }
+    .reel figcaption { font-size: 7px; padding: 14px 7px 6px; }
+    .btn { padding: 16px 28px 15px 32px; font-size: 10px; letter-spacing: 0.34em; }
+    .contact-micro { font-size: 8.5px; letter-spacing: 0.28em; }
+    #clock-time { font-size: 24px; }
+    #loader #intro-logo svg { width: min(60vw, 210px); }
+    .zone-card.center { top: 54%; }
+    .zone-card.center h2 { font-size: 7.4vw !important; }
+    .zone-card.center .body-copy { font-size: 12.3px; line-height: 1.75; margin-top: 14px; }
+    #card-5 .eyebrow { margin-bottom: 10px; }
+    #card-5 .specs { margin-top: 14px; }
+    #card-5 .spec { padding: 10px 14px 0 0; margin-right: 12px; }
+    #card-5 .sig-line { font-size: 15px; margin-top: 14px; }
+    #card-5 .cta-row { margin-top: 24px; }
+    #card-5 .contact-micro { margin-top: 16px; }
   }
 </style>
 </head>
