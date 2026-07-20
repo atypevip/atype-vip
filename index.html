@@ -523,12 +523,12 @@
     cultivated connections — arranged long before the doors open.
   </div>
   <div class="reel" style="margin-top:24px">
-    <figure><video src="showcase-tennis.mp4" muted autoplay loop playsinline></video><figcaption><b>Centre court</b> · The championships</figcaption></figure>
-    <figure><video src="showcase-f1.mp4" muted autoplay loop playsinline></video><figcaption><b>Grid side</b> · Grand prix</figcaption></figure>
-    <figure><video src="showcase-club.mp4" muted autoplay loop playsinline></video><figcaption><b>Beach club</b> · Island sets</figcaption></figure>
-    <figure><video src="showcase-ascot.mp4" muted autoplay loop playsinline></video><figcaption><b>Race day</b> · Royal enclosure</figcaption></figure>
-    <figure><video src="showcase-yacht.mp4" muted autoplay loop playsinline></video><figcaption><b>Monaco</b> · Superyacht charter</figcaption></figure>
-    <figure><video src="showcase-ski.mp4" muted autoplay loop playsinline></video><figcaption><b>Alpine</b> · First tracks</figcaption></figure>
+    <figure><video class="reelvid" src="showcase-tennis.mp4" muted loop playsinline preload="none" poster="img/tennis.jpg"></video><figcaption><b>Centre court</b> · The championships</figcaption></figure>
+    <figure><video class="reelvid" src="showcase-f1.mp4" muted loop playsinline preload="none" poster="img/f1.jpg"></video><figcaption><b>Grid side</b> · Grand prix</figcaption></figure>
+    <figure><video class="reelvid" src="showcase-club.mp4" muted loop playsinline preload="none" poster="img/club.jpg"></video><figcaption><b>Beach club</b> · Island sets</figcaption></figure>
+    <figure><video class="reelvid" src="showcase-ascot.mp4" muted loop playsinline preload="none" poster="img/ascot.jpg"></video><figcaption><b>Race day</b> · Royal enclosure</figcaption></figure>
+    <figure><video class="reelvid" src="showcase-yacht.mp4" muted loop playsinline preload="none" poster="img/yacht.jpg"></video><figcaption><b>Monaco</b> · Superyacht charter</figcaption></figure>
+    <figure><video class="reelvid" src="showcase-ski.mp4" muted loop playsinline preload="none" poster="img/ski.jpg"></video><figcaption><b>Alpine</b> · First tracks</figcaption></figure>
   </div>
   <div class="sig-line">Luxury is having someone you trust,<br>one call away.</div>
 </div>
@@ -617,7 +617,11 @@ function preload() {
   let p1 = 0;
   const load = (i, isP1) => {
     const img = new Image();
+    img.decoding = 'async';
+    try { img.fetchPriority = isP1 ? 'high' : 'low'; } catch (e) {}
     img.onload = () => {
+      if (window.createImageBitmap)
+        createImageBitmap(img).then(bm => { frames[i] = bm; }).catch(() => {});
       loadedCount++;
       if (isP1) {
         p1++;
@@ -686,7 +690,7 @@ fetch('logo.svg').then(r => r.text()).then(txt => {
 
 /* ================= canvas ================= */
 const canvas = document.getElementById('film');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false });
 function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = innerWidth * dpr;
@@ -694,10 +698,13 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 
+function ready(im) { return im && (im instanceof ImageBitmap || (im.complete && im.naturalWidth)); }
+function dims(im) { return im instanceof ImageBitmap ? [im.width, im.height] : [im.naturalWidth, im.naturalHeight]; }
 function drawCover(img) {
-  if (!img || !img.complete || !img.naturalWidth) return;
+  if (!ready(img)) return;
   const cw = canvas.width, ch = canvas.height;
-  const ir = img.naturalWidth / img.naturalHeight, cr = cw / ch;
+  const [iw, ih] = dims(img);
+  const ir = iw / ih, cr = cw / ch;
   let dw, dh;
   if (ir > cr) { dh = ch; dw = ch * ir; } else { dw = cw; dh = cw / ir; }
   ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
@@ -785,10 +792,16 @@ function tick() {
     const ziF = Math.floor(zfF), zpF = zfF - ziF;
     const f0 = CLIP_BOUNDS[ziF], f1 = CLIP_BOUNDS[ziF + 1];
     let idx = Math.min(FRAME_COUNT - 1, f0 + Math.floor(zpF * (f1 - f0)));
-    let img = frames[idx];
-    let step = 0;
-    while ((!img || !img.complete || !img.naturalWidth) && step < 40) { idx = Math.max(0, idx - 1); img = frames[idx]; step++; }
-    drawCover(img);
+    if (!ready(frames[idx])) {
+      for (let step = 1; step < 60; step++) {
+        if (idx - step >= 0 && ready(frames[idx - step])) { idx -= step; break; }
+        if (idx + step < FRAME_COUNT && ready(frames[idx + step])) { idx += step; break; }
+      }
+    }
+    if (idx !== window.__lastIdx && ready(frames[idx])) {
+      drawCover(frames[idx]);
+      window.__lastIdx = idx;
+    }
   }
 
   /* clock: 06:00 -> 24:00 across phases (piecewise per zone) */
@@ -821,6 +834,15 @@ function tick() {
   });
 
   cue.style.opacity = p < 0.01 ? 1 : 0;
+
+  const nearReel = p > 0.30 && p < 0.68 && !filmDone;
+  if (nearReel !== window.__reelOn) {
+    window.__reelOn = nearReel;
+    document.querySelectorAll('.reelvid').forEach(v => {
+      if (nearReel) { v.play().catch(() => {}); }
+      else v.pause();
+    });
+  }
 }
 tick();
 

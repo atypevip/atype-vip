@@ -41,7 +41,7 @@
     </div>
 
     <div class="card reveal" id="nightlife">
-      <video src="showcase-club.mp4" muted autoplay loop playsinline></video>
+      <video src="showcase-club.mp4" muted loop playsinline preload="none" poster="img/club.jpg"></video>
       <h3>Nightlife &amp; Beach Clubs</h3>
       <p>From London tables to Mykonos beach clubs, we arrange premium nights out with the right access, positioning and atmosphere.</p>
       <a class="enq" data-wa="Hello A-TYPE VIP, I would like to arrange nightlife or a beach club." href="#">Enquire <span class="ar">→</span></a>
@@ -83,7 +83,7 @@
     </div>
 
     <div class="card reveal" id="yacht">
-      <video src="showcase-yacht.mp4" muted autoplay loop playsinline></video>
+      <video src="showcase-yacht.mp4" muted loop playsinline preload="none" poster="img/yacht.jpg"></video>
       <h3>Yacht Charter</h3>
       <p>Private yachts, day charters and tailored itineraries across the world's most iconic coastlines.</p>
       <a class="enq" data-wa="Hello A-TYPE VIP, I would like to enquire about a yacht charter." href="#">Enquire <span class="ar">→</span></a>
@@ -126,6 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.isIntersecting) e.target.classList.add('in');
   }), { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  // lazy video: fetch + play only when on screen
+  const vio = new IntersectionObserver(es => es.forEach(e => {
+    const v = e.target;
+    if (e.isIntersecting) v.play().catch(() => {});
+    else v.pause();
+  }), { rootMargin: '200px' });
+  document.querySelectorAll('video[preload="none"]').forEach(v => vio.observe(v));
+
 });
 </script>
 </body>

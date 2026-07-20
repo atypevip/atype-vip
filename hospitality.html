@@ -33,7 +33,7 @@
   <div class="grid">
 
     <div class="card reveal" id="f1">
-      <video src="showcase-f1.mp4" muted autoplay loop playsinline></video>
+      <video src="showcase-f1.mp4" muted loop playsinline preload="none" poster="img/f1.jpg"></video>
       <h3>Formula 1</h3>
       <p>Premium race-weekend experiences — paddock access, grandstand seating, yachts, hospitality suites and after-parties at selected Grand Prix destinations.</p>
       <a class="enq" data-wa="Hello A-TYPE VIP, I would like to enquire about Formula 1 hospitality." href="#">Enquire <span class="ar">→</span></a>
@@ -47,14 +47,14 @@
     </div>
 
     <div class="card reveal" id="tennis">
-      <video src="showcase-tennis.mp4" muted autoplay loop playsinline></video>
+      <video src="showcase-tennis.mp4" muted loop playsinline preload="none" poster="img/tennis.jpg"></video>
       <h3>Wimbledon &amp; Tennis</h3>
       <p>Centre Court experiences, premium tickets, private dining and distinguished tournament hospitality.</p>
       <a class="enq" data-wa="Hello A-TYPE VIP, I would like to enquire about Wimbledon or tennis hospitality." href="#">Enquire <span class="ar">→</span></a>
     </div>
 
     <div class="card reveal" id="racing">
-      <video src="showcase-ascot.mp4" muted autoplay loop playsinline></video>
+      <video src="showcase-ascot.mp4" muted loop playsinline preload="none" poster="img/ascot.jpg"></video>
       <h3>Royal Ascot &amp; Horse Racing</h3>
       <p>Premium hospitality, private viewing, elegant dining and access to the most celebrated racing occasions.</p>
       <a class="enq" data-wa="Hello A-TYPE VIP, I would like to enquire about Royal Ascot or racing hospitality." href="#">Enquire <span class="ar">→</span></a>
@@ -163,6 +163,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.isIntersecting) e.target.classList.add('in');
   }), { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  // lazy video: fetch + play only when on screen
+  const vio = new IntersectionObserver(es => es.forEach(e => {
+    const v = e.target;
+    if (e.isIntersecting) v.play().catch(() => {});
+    else v.pause();
+  }), { rootMargin: '200px' });
+  document.querySelectorAll('video[preload="none"]').forEach(v => vio.observe(v));
+
 });
 </script>
 </body>
